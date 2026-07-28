@@ -9,3 +9,6 @@ etl:
 
 psql:
 	docker compose exec postgres psql -U dwh -d dwh_platform
+
+diagrams:
+	d2 docs/diagrams/pipeline.d2 docs/img/pipeline.svg

@@ -1,0 +1,112 @@
+vars: {
+  d2-config: {
+    layout-engine: elk
+  }
+}
+
+classes: {
+  layer: {
+    label.near: outside-top-center
+    label.style.bold: true
+    shape: rectangle
+    height: 620
+    style: {
+      fill: "#ffffff"
+      stroke: "#334155"
+      shadow: true
+    }
+  }
+  medallion: {
+    height: 500
+  }
+  icon: {
+    label.near: outside-top-center
+    style: {
+      stroke-width: 1
+      stroke: "#94a3b8"
+      fill: "#f8fafc"
+    }
+  }
+}
+
+direction: right
+
+title: |md
+  Postgres → Python → Parquet → DuckDB + dbt · Medallion Architecture
+| {near: top-center}
+
+elt: {
+  label: ""
+  style.fill: white
+  src {
+    class: layer
+    label: 1. Source Layer
+    grid-columns: 1
+    pg: B2B {icon: ./icons/postgres.svg}
+    log: Weblog {icon: ./icons/file.svg}
+    xls: Marketing Spreadsheet {icon: ./icons/sheets.svg}
+  }
+  src.*.class: icon
+  src.*.width: 100
+  val {
+    label: Extract + validate\nbatched reads, Pydantic
+    style {
+      fill: "#eef2ff"
+      stroke: "#4f46e5"
+      stroke-width: 2
+    }
+  }
+  lnd {
+    class: layer
+    label: 2. Landing Layer
+    pqt {
+      label: Parquet Data
+      shape: page
+      style.multiple: true
+    }
+  }
+  dwh {
+    class: layer
+    label: 3. Data Warehouse - Medallion
+    grid-rows: 1
+    brz {
+      class: medallion
+      label: Bronze
+      raw: raw_* {shape: stored_data}
+    }
+    slr {
+      class: medallion
+      label: Silver
+      stg: stg_* {shape: stored_data}
+    }
+    gld {
+      class: medallion
+      label: Gold
+      grid-columns: 1
+      dim: dim_* {shape: stored_data}
+      fct: fct_* {shape: stored_data}
+      rpt: rpt_* {shape: stored_data}
+    }
+    brz -> slr: dbt staging
+    slr -> gld: dbt marts
+  }
+  dwh.*.*.style.multiple: true
+  out {
+    class: layer
+    label: 4. Output
+    grid-columns: 1
+    rpt: Business reports {shape: document}
+    dq: Data quality report {shape: document}
+    run: Run summary {shape: document}
+  }
+}
+
+elt.src.pg -> elt.val: Extract
+elt.src.log -> elt.val: Extract
+elt.src.xls -> elt.val: Extract
+elt.src -> elt.val {style.stroke:transparent}
+
+elt.val -> elt.lnd.pqt: Valid Data
+elt.lnd.pqt -> elt.dwh: Load 
+elt.dwh.gld -> elt.out: Query
+elt.dwh -> elt.out {style.stroke:transparent}
