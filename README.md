@@ -59,6 +59,11 @@ Layers:
 2. Most popular products in the country where most users log in from
 3. Sales by month for the last year
 
+## What you need
+
+Docker, Make, and [uv](https://docs.astral.sh/uv/). D2 is optional — only if
+you want to regenerate the diagrams, since the rendered SVGs are committed.
+
 ## How to run it
 
 ```bash
