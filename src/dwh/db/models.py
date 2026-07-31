@@ -25,7 +25,7 @@ class Customer(Base):
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
     document_number: Mapped[str] = mapped_column(String(20))
     full_name: Mapped[str]
-    date_of_birth: Mapped[date | None]
+    date_of_birth: Mapped[date]
 
 
 class Product(Base):
