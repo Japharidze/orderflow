@@ -15,6 +15,7 @@ class Company(Base):
     __tablename__ = "companies"
     id: Mapped[int] = mapped_column(primary_key=True)
     cuit: Mapped[str] = mapped_column(String(13), unique=True)
+    user_name: Mapped[str] = mapped_column(String(20), unique=True) # for weblog matching %u
     name: Mapped[str]
     is_supplier: Mapped[bool] = mapped_column(default=False)
 
@@ -23,7 +24,7 @@ class Customer(Base):
     __tablename__ = "customers"
     id: Mapped[int] = mapped_column(primary_key=True)
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
-    document_number: Mapped[str] = mapped_column(String(20))
+    document_number: Mapped[str] = mapped_column(String(20), unique=True)
     full_name: Mapped[str]
     date_of_birth: Mapped[date]
 

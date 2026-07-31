@@ -22,9 +22,10 @@ def main() -> None:
     Base.metadata.create_all(eng)
 
     with Session(eng) as s:
-        suppliers = [Company(cuit=cuit(), name=fake.company(), is_supplier=True)
+        suppliers = [Company(cuit=cuit(), user_name=fake.unique.user_name()[:20], name=fake.company(), is_supplier=True)
                      for _ in range(N_SUPPLIERS)]
-        buyers = [Company(cuit=cuit(), name=fake.company()) for _ in range(N_COMPANIES)]
+        buyers = [Company(cuit=cuit(), user_name=fake.unique.user_name()[:20], name=fake.company())
+                  for _ in range(N_COMPANIES)]
         s.add_all(suppliers + buyers)
         s.flush()
 
@@ -36,7 +37,7 @@ def main() -> None:
         ]
         customers = [
             Customer(company_id=random.choice(buyers).id,
-                     document_number=str(fake.random_number(8, True)),
+                     document_number=str(fake.unique.random_number(8, True)),
                      full_name=fake.name(),
                      date_of_birth=fake.date_of_birth(minimum_age=18, maximum_age=80))
             for _ in range(N_CUSTOMERS)
