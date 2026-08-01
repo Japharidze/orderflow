@@ -9,3 +9,6 @@ SOURCE = DATA / "source"
 
 LANDING.mkdir(parents=True, exist_ok=True)
 SOURCE.mkdir(parents=True, exist_ok=True)
+
+WEBLOG_FILE = SOURCE / "weblog.log"
+LEADS_FILE = SOURCE / "marketing_leads.xlsx"

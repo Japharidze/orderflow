@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from dwh.db.models import Company, engine
-from dwh.config import SOURCE
+from dwh.config import WEBLOG_FILE
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--lines', type=int, help="Number")
@@ -75,8 +75,7 @@ def main() -> None:
     home = {u: random.choices(list(COUNTRY_BLOCKS), weights=COUNTRY_WEIGHTS)[0]
             for u in user_pool}
 
-    p = SOURCE / "weblog.txt"
-    with open(p, mode='w') as f:
+    with open(WEBLOG_FILE, mode='w') as f:
         for _ in range(n_logs):
             # get random (user: country) pair from companies or suppliers, or "-" from anonymous
             u = random.choice(user_pool)

@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from dwh.db.models import Company, engine
-from dwh.config import SOURCE
+from dwh.config import LEADS_FILE
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--rows', type=int, help="Number")
@@ -90,8 +90,7 @@ def main() -> None:
         rows.append(dict(random.choice(rows)))
     random.shuffle(rows)
 
-    p = SOURCE / "marketing_leads.xlsx"
-    pd.DataFrame(rows).to_excel(p, index=False)
+    pd.DataFrame(rows).to_excel(LEADS_FILE, index=False)
 
     print(f"seeded {len(rows)} leads")
 
