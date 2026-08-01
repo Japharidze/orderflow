@@ -9,7 +9,7 @@ seed_leads:
 	uv run python -m generators.leads $(ARGS)
 seed: seed_platform seed_weblog seed_leads # platform first on purpose
 
-etl:
+elt:
 	uv run python -m dwh.runner
 
 psql:
