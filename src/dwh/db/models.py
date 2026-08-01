@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import ForeignKey, String, create_engine
+from sqlalchemy import ForeignKey, String, UniqueConstraint, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from dwh.config import PG_URL
@@ -59,6 +59,7 @@ class CatalogItem(Base):
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
     price: Mapped[Decimal]
+    UniqueConstraint("company_id", "product_id", name="uq_catalog_item")
 
 def engine():
     return create_engine(PG_URL)
