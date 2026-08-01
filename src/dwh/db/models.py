@@ -54,7 +54,7 @@ class OrderLine(Base):
     unit_price: Mapped[Decimal]
 
 class CatalogItem(Base):
-    __tablename__ = "catalogs"
+    __tablename__ = "catalog_items"
     id: Mapped[int] = mapped_column(primary_key=True)
     company_id: Mapped[int] = mapped_column(ForeignKey("companies.id"))
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
