@@ -106,8 +106,8 @@ storage.
 
 ## Roadmap
 
-- [ ] Source database and generated data
-- [ ] Extract, validate, land as Parquet
+- [x] Source database and generated data
+- [x] Extract, validate, land as Parquet
 - [ ] Load into DuckDB bronze
 - [ ] dbt staging and mart models
 - [ ] Run metadata and restart logic
