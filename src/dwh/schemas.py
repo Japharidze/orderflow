@@ -84,12 +84,12 @@ class WeblogLine(BaseModel):
 # --- marketing leads ---
 
 class Lead(BaseModel):
-    lead_name: str
-    company_name: str
+    lead_name: str = Field(alias="lead name")
+    company_name: str = Field(alias="company name")
     cuit: str
     email: str
     phone: str
     channel: str
-    lead_date: date
+    lead_date: date = Field(alias="lead date")
     status: str
     owner: str
