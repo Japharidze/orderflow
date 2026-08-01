@@ -6,3 +6,6 @@ ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 LANDING = DATA / "landing"
 SOURCE = DATA / "source"
+
+LANDING.mkdir(parents=True, exist_ok=True)
+SOURCE.mkdir(parents=True, exist_ok=True)
