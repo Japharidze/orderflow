@@ -3,7 +3,7 @@ import random
 from faker import Faker
 from sqlalchemy.orm import Session
 
-from dwh.db.models import Base, Company, Customer, Order, OrderLine, Product, engine
+from dwh.db.models import Base, Company, Customer, Order, OrderLine, Product, CatalogItem, engine
 
 fake = Faker("es_AR")
 Faker.seed(42)
@@ -45,6 +45,21 @@ def main() -> None:
         s.add_all(products + customers)
         s.flush()
 
+        catalog = {}
+        company_products = {}
+        for company in buyers:
+            company_products[company.id] = []
+            for product in random.sample(products, random.randint(5, 20)):
+                price=round(float(product.default_price) * round(random.uniform(1.5, 2), 2))
+                catalog_item = CatalogItem(company_id=company.id,
+                                           product_id=product.id,
+                                           price=price)
+                catalog[(company.id, product.id)] = price
+                company_products[company.id].append(product)
+                s.add(catalog_item)
+        s.flush()
+
+
         for _ in range(N_ORDERS):
             customer = random.choice(customers)
             order = Order(company_id=customer.company_id,
@@ -53,13 +68,13 @@ def main() -> None:
             s.add(order)
             s.flush()
             for _ in range(random.randint(1, 4)):
-                p = random.choice(products)
+                p = random.choice(company_products[customer.company_id])
                 s.add(OrderLine(order_id=order.id, product_id=p.id,
                                 quantity=random.randint(1, 10),
-                                unit_price=p.default_price))
+                                unit_price=catalog[(customer.company_id, p.id)]))
 
         s.commit()
-    print(f"seeded {N_ORDERS} orders")
+    print(f"seeded {N_ORDERS} orders, {N_COMPANIES} companies, {N_CUSTOMERS} customers, {N_SUPPLIERS} suppliers, {N_PRODUCTS} products")
 
 
 if __name__ == "__main__":
