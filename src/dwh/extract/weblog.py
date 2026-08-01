@@ -16,7 +16,7 @@ def _parse_weblog_line(line: str) -> dict:
     match = LOG_PATTERN.match(line)
     return match.groupdict() if match else {}
 
-def extract_weblog() -> Iterator[list[dict]]:
+def weblog() -> Iterator[list[dict]]:
     """Yield batches of weblog rows so memory stays flat."""
     batch = []
     with open(WEBLOG_FILE) as f:
