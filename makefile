@@ -1,19 +1,19 @@
 up:
 	docker compose up -d
 
-seed_dwh:
-	uv run python -m generators.dwh
+seed_platform:
+	uv run python -m generators.platform
 seed_weblog:
 	uv run python -m generators.weblog $(ARGS)
 seed_leads:
 	uv run python -m generators.leads $(ARGS)
-seed: seed_dwh seed_weblog seed_leads # dwh first on purpose
+seed: seed_platform seed_weblog seed_leads # platform first on purpose
 
 etl:
 	uv run python -m dwh.runner
 
 psql:
-	docker compose exec postgres psql -U dwh -d dwh_platform
+	docker compose exec postgres psql -U b2b -d b2b_platform
 
 diagrams:
 	@command -v d2 >/dev/null || { echo "d2 not installed: https://d2lang.com"; exit 1; }
