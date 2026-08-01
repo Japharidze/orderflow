@@ -1,6 +1,6 @@
 from collections.abc import Iterator
 
-from sqlalchemy import select, text
+from sqlalchemy import select
 
 from dwh.db.models import Base, engine
 
