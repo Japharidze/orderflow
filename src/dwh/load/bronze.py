@@ -5,7 +5,7 @@ from dwh.config import WAREHOUSE, LANDING, ROOT
 
 QUERY = """
     CREATE OR REPLACE TABLE raw_{} AS
-    SELECT *, now() AS _loaded_at, ? AS _run_id, filename AS _source_file
+    SELECT * EXCLUDE(filename), now() AS _loaded_at, ? AS _run_id, filename as _source_file
     FROM read_parquet('{}/*.parquet', filename = true)
 """
 
@@ -14,7 +14,5 @@ def bronze(run_id: int = 0) -> None:
         for path in LANDING.iterdir():
             if path.name.startswith('rejects'):
                 continue
-            query = QUERY.format(path.name, path.relative_to(ROOT), [run_id])
-            con.execute(query)
-
-        con.sql("show all tables").show()
+            query = QUERY.format(path.name, path.relative_to(ROOT))
+            con.execute(query, [run_id])
