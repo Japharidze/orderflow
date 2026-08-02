@@ -3,7 +3,7 @@ select
     cast(strftime(wl.requested_at, '%Y%m%d') as integer) as date_key,
     wl.username,
     wl.ip,
-    cb.country_code,
+    cb.country_name,
     wl.user_agent,
     case
         when regexp_matches(wl.user_agent, '(?i)bot|crawler|spider|slurp') then 'bot'
