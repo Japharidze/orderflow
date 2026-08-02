@@ -25,14 +25,14 @@ class Product(BaseModel):
     id: int
     supplier_id: int
     name: str
-    default_price: Decimal = Field(ge=0)
+    default_price: Decimal = Field(ge=0, max_digits=8, decimal_places=2)
 
 
 class CatalogItem(BaseModel):
     id: int
     company_id: int
     product_id: int
-    price: Decimal = Field(ge=0)
+    price: Decimal = Field(ge=0, max_digits=8, decimal_places=2)
 
 
 class Order(BaseModel):
@@ -47,7 +47,7 @@ class OrderLine(BaseModel):
     order_id: int
     product_id: int
     quantity: int = Field(gt=0)
-    unit_price: Decimal = Field(ge=0)
+    unit_price: Decimal = Field(ge=0, max_digits=8, decimal_places=2)
 
 
 # --- weblog ---
