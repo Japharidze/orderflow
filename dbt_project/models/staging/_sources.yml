@@ -2,10 +2,20 @@ version: 2
 
 sources:
   - name: raw
-    schema: main          # DuckDB's default schema
+    schema: main
+    description: >
+      Bronze layer. Loaded from Parquet by the Python pipeline, not by dbt.
+      Mirrors the source systems with no cleaning applied.
     tables:
       - name: raw_companies
-      - name: raw_products
-      - name: raw_orders
-      - name: raw_order_lines
+        description: Companies and suppliers from the B2B platform database.
       - name: raw_weblog
+        description: >
+          Parsed web server log lines. One row per request, structurally
+          validated at ingest.
+      - name: raw_orders
+        description: Order headers — which company ordered, for whom, and when.
+      - name: raw_order_lines
+        description: Order detail — one row per product on an order.
+      - name: raw_products
+        description: Products offered by suppliers, with their default prices.
