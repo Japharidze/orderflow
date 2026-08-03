@@ -1,5 +1,6 @@
 from duckdb import connect
 
+from dwh import metadata
 from dwh.config import WAREHOUSE, LANDING, ROOT
 
 
@@ -9,10 +10,15 @@ QUERY = """
     FROM read_parquet('{}/*.parquet', filename = true)
 """
 
-def bronze(run_id: int = 0) -> None:
-    with connect(WAREHOUSE) as con:
-        for path in LANDING.iterdir():
-            if path.name.startswith('rejects'):
-                continue
-            query = QUERY.format(path.name, path.relative_to(ROOT))
-            con.execute(query, [run_id])
+def run(run_id: int) -> None:
+    """Load every landed dataset into a raw table."""
+    with metadata.job(run_id, "bronze", "bronze") as j:
+        tables = rows = 0
+        with connect(WAREHOUSE) as con:
+            for path in LANDING.iterdir():
+                query = QUERY.format(path.name, path.relative_to(ROOT))
+                con.execute(query, [run_id])
+                rows += con.execute(f"select count(*) from raw_{path.name}").fetchone()[0]
+                tables += 1
+        j.rows_written = rows
+    print(f"loaded {tables} tables, {rows} rows")
