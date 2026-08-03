@@ -10,5 +10,6 @@ select
     d as date,
     year(d) as year,
     month(d) as month,
+    monthname(d) as month_name,
     day(d) as day
 from days
