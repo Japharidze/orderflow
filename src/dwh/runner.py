@@ -15,11 +15,11 @@ DB_SCHEMAS = [
     schemas.Product, schemas.Order, schemas.OrderLine]
 MODEL_NAMES = [obj.__tablename__.lower() for obj in DB_MODELS]
 
-DB_ITERATOR_TUPLES = [(table(model), schema) for model, schema in zip(DB_MODELS, DB_SCHEMAS)]
+DB_ITERATOR_TUPLES = [(lambda m=model: table(m), schema) for model, schema in zip(DB_MODELS, DB_SCHEMAS)]
 ITERATORS = {name : tup for name, tup in zip(MODEL_NAMES, DB_ITERATOR_TUPLES)}
 ITERATORS = ITERATORS | {
-    "weblog": (weblog(), schemas.WeblogLine),
-    "leads": (leads(), schemas.Lead),
+    "weblog": (weblog, schemas.WeblogLine),
+    "leads": (leads, schemas.Lead),
 }
 
 def run() -> None:
@@ -28,7 +28,7 @@ def run() -> None:
 
     total_good = total_bad = 0
     for name, (iterator, schema) in ITERATORS.items():
-        for i, batch in enumerate(iterator):
+        for i, batch in enumerate(iterator()):
             good, bad = split(batch, schema)
             if good:
                 write_batch(good, f"{name}", i)
