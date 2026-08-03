@@ -29,10 +29,33 @@ METHODS = (["GET", "POST", "PUT", "DELETE"], [80, 15, 3, 2])
 STATUSES = ([200, 201, 301, 302, 400, 401, 403, 404, 500, 503],
             [70, 5, 4, 5, 3, 3, 2, 5, 2, 1])
 
+def _truncated(log: str) -> str:
+    """Log rotation or a crashed write cut the line off mid-way."""
+    return log[: random.randint(20, len(log) - 20)]
+
+
+def _missing_fields(log: str) -> str:
+    """Fewer tokens than the format expects."""
+    parts = log.split(" ")
+    del parts[random.randint(0, 3)]
+    return " ".join(parts)
+
+
+def _unclosed_quote(log: str) -> str:
+    """One quote gone, so anything expecting a matched pair breaks."""
+    i = log.find('"')
+    return log[:i] + log[i + 1:] if i != -1 else log
+
+
+def _junk(log: str) -> str:
+    """A blank line, or bytes from an encoding problem."""
+    return random.choice(["", "   ", "\x00\xff garbage \x1b[31m"])
+
+
 def _broke_line(log: str) -> str:
-    methods = [_truncated, _missing_fields, _unclosed_quote, _junk, _not_malformed] # TBD
-    log = random.choice(methods)(log)
-    return log
+    methods = [_truncated, _missing_fields, _unclosed_quote, _junk]
+    return random.choice(methods)(log)
+
 
 def _generate_line(user: str, country: str) -> str:
         # "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-agent}i\""
@@ -81,7 +104,7 @@ def main() -> None:
             u = random.choice(user_pool)
             line = _generate_line(u, home[u])
             if random.random() < 0.02:
-                line = line #_broke_line(line)
+                line = _broke_line(line)
 
             f.write(line + '\n')
 

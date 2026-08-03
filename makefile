@@ -17,7 +17,7 @@ seed: seed_platform seed_weblog seed_leads # platform first on purpose
 
 # --- elt ---
 run:
-	uv run python -m dwh.runner
+	uv run python -m dwh.runner $(ARGS)
 
 # examples:
 #   make run
