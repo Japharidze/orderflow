@@ -108,8 +108,8 @@ storage.
 
 - [x] Source database and generated data
 - [x] Extract, validate, land as Parquet
-- [ ] Load into DuckDB bronze
-- [ ] dbt staging and mart models
+- [x] Load into DuckDB bronze
+- [x] dbt staging and mart models
 - [ ] Run metadata and restart logic
 - [ ] Reports
 - [ ] Short demo video
