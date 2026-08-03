@@ -8,10 +8,12 @@ def _dbt(*args: str) -> None:
     subprocess.run(["dbt", *args, "--profiles-dir", "."], cwd=DBT_DIR, check=True)
 
 
-def run(run_id: int) -> None:
+def run(run_id: int, done: set[str]) -> None:
     """Build the warehouse models and run the data tests."""
-    with metadata.job(run_id, "transform", "dbt_run"):
-        _dbt("run")
+    if "dbt_run" not in done:
+        with metadata.job(run_id, "transform", "dbt_run"):
+            _dbt("run")
 
-    with metadata.job(run_id, "transform", "dbt_test"):
-        _dbt("test")
+    if "dbt_test" not in done:
+        with metadata.job(run_id, "transform", "dbt_test"):
+            _dbt("test")

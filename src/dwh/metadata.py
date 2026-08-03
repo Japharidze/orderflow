@@ -8,11 +8,25 @@ from dwh.config import SQL_DIR, WAREHOUSE
 
 
 def init() -> None:
-    """Creates metadata tables if they don't exist."""
+    """Create the metadata tables and close any run left behind by a crash."""
     with open(SQL_DIR / "metadata.sql") as f:
         sql = f.read()
     with connect(WAREHOUSE) as con:
         con.execute(sql)
+        con.execute("""
+            update job_runs
+            set status = 'failed',
+                finished_at = ?,
+                error = 'abandoned: process did not finish'
+            where status = 'running'
+        """, [datetime.now()])
+        con.execute("""
+            update runs
+            set status = 'failed',
+                finished_at = ?,
+                error = 'abandoned: process did not finish'
+            where status = 'running'
+        """, [datetime.now()])
 
 def last_run() -> dict | None:
     with connect(WAREHOUSE) as con:
@@ -106,6 +120,15 @@ def save_rejects(run_id: int, source: str, rows: list[dict]) -> None:
             """,
             [[run_id, source, r["row"], r["reason"], datetime.now()] for r in rows],
         )
+
+def completed_jobs(run_id: int) -> set[str]:
+    """Job names that already succeeded in this run."""
+    with connect(WAREHOUSE) as con:
+        rows = con.execute(
+            "select distinct job_name from job_runs where run_id = ? and status = 'success'",
+            [run_id],
+        ).fetchall()
+    return {r[0] for r in rows}
 
 @contextmanager
 def job(run_id: int, stage: str, name: str):

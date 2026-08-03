@@ -50,9 +50,11 @@ def _land(run_id: int, name: str, iterator: callable, schema: callable) -> None:
 
     return good_rows + bad_rows, good_rows, bad_rows
 
-def run(run_id: int) -> None:
+def run(run_id: int, done: set[str]) -> None:
     """Extracts data from source files and lands them in the landing zone."""
 
     for name, (iterator, schema) in ITERATORS.items():
+        if name in done:
+            continue
         with metadata.job(run_id, "landing", name) as j:
             j.rows_read, j.rows_written, j.rows_rejected = _land(run_id, name, iterator, schema)

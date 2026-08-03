@@ -10,8 +10,10 @@ QUERY = """
     FROM read_parquet('{}/*.parquet', filename = true)
 """
 
-def run(run_id: int) -> None:
+def run(run_id: int, done: set[str]) -> None:
     """Load every landed dataset into a raw table."""
+    if "bronze" in done:
+        return
     with metadata.job(run_id, "bronze", "bronze") as j:
         tables = rows = 0
         with connect(WAREHOUSE) as con:
