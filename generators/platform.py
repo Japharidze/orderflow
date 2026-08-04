@@ -57,7 +57,7 @@ def main() -> None:
         for company in buyers:
             company_products[company.id] = []
             for product in random.sample(products, random.randint(5, 20)):
-                price=round(float(product.default_price) * round(random.uniform(1.5, 2), 2))
+                price=round(float(product.default_price) * round(random.uniform(1.5, 2), 2), 2)
                 catalog_item = CatalogItem(company_id=company.id,
                                            product_id=product.id,
                                            price=price)
