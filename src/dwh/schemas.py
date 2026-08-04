@@ -93,3 +93,15 @@ class Lead(BaseModel):
     lead_date: date = Field(alias="lead date")
     status: str
     owner: str
+
+DATE_FORMATS = ["%Y-%m-%d", "%d/%m/%Y", "%d.%m.%Y", "%b %d, %Y"]
+
+@field_validator("lead_date", mode="before")
+@classmethod
+def parse_date(cls, v):
+    for fmt in DATE_FORMATS:
+        try:
+            return datetime.strptime(str(v).strip(), fmt).date()
+        except ValueError:
+            continue
+    raise ValueError(f"unrecognised date format: {v}")
