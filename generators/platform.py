@@ -10,7 +10,14 @@ Faker.seed(42)
 random.seed(42)
 
 N_COMPANIES, N_SUPPLIERS, N_CUSTOMERS, N_PRODUCTS, N_ORDERS = 20, 5, 200, 100, 1000
+ADJECTIVES = ["Heavy-Duty", "Industrial", "Reinforced", "Galvanised",
+              "Compact", "Professional", "Standard", "Premium"]
+MATERIALS = ["Steel", "Aluminium", "PVC", "Copper", "Rubber", "Nylon"]
+ITEMS = ["Valve", "Bearing", "Coupling", "Hose Clamp", "Gasket", "Bracket",
+         "Cable Tie", "Fastener", "Pump", "Filter", "Hinge", "Pallet Jack"]
 
+def product_name() -> str:
+    return f"{random.choice(ADJECTIVES)} {random.choice(MATERIALS)} {random.choice(ITEMS)}"
 
 def cuit() -> str:
     return f"{random.randint(20, 34)}-{random.randint(10**7, 10**8 - 1)}-{random.randint(0, 9)}"
@@ -31,7 +38,7 @@ def main() -> None:
 
         products = [
             Product(supplier_id=random.choice(suppliers).id,
-                    name=fake.word().capitalize(),
+                    name=product_name(),
                     default_price=round(random.uniform(10, 500), 2))
             for _ in range(N_PRODUCTS)
         ]
