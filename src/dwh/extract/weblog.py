@@ -14,7 +14,7 @@ LOG_PATTERN = re.compile(
 def _parse_weblog_line(line: str) -> dict:
     """Parse a single line of the weblog into a dictionary."""
     match = LOG_PATTERN.match(line)
-    return match.groupdict() if match else {}
+    return match.groupdict() if match else {"_raw": line}
 
 def weblog() -> Iterator[list[dict]]:
     """Yield batches of weblog rows so memory stays flat."""

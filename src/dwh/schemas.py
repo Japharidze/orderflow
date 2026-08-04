@@ -80,6 +80,13 @@ class WeblogLine(BaseModel):
     def dash_is_zero(cls, v: str) -> str:
         return "0" if v == "-" else v
 
+    @model_validator(mode="before")
+    @classmethod
+    def not_malformed(cls, data: dict) -> dict:
+        if "_raw" in data:
+            raise ValueError("malformed line")
+        return data
+
 
 # --- marketing leads ---
 DATE_FORMATS = ["%Y-%m-%d", "%d/%m/%Y", "%d.%m.%Y", "%b %d, %Y"]
