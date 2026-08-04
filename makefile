@@ -32,9 +32,10 @@ report:
 
 # examples:
 #   make report
-#   make report ARGS="--runs"
-#   make report ARGS="--quality"
-#   make report ARGS="--all"
+#   make report ARGS="--section business"
+#   make report ARGS="--section runs"
+#   make report ARGS="--section quality"
+#   make report ARGS="--section all"
 
 # --- development ---
 dbt:

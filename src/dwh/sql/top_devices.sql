@@ -1,0 +1,1 @@
+select * from rpt_top_devices
