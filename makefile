@@ -27,7 +27,8 @@ run:
 
 # --- reports ---
 report:
-	uv run python -m dwh.reports $(ARGS)
+	@clear
+	@uv run python -m dwh.reports.cli $(ARGS)
 
 # examples:
 #   make report
