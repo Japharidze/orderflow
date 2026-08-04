@@ -7,5 +7,5 @@ from dwh.config import LEADS_FILE
 
 def leads() -> Iterator[list[dict]]:
     df = pd.read_excel(LEADS_FILE, dtype=str)
-    df = df.where(df["cuit"].notna(), None) # convert NaN to None for cuit, since it's optional
+    df = df.astype(object).where(df.notna(), None) # convert NaN to None for all columns
     yield df.to_dict(orient="records") # yield a single batch of all leads, since the file is small

@@ -82,11 +82,12 @@ class WeblogLine(BaseModel):
 
 
 # --- marketing leads ---
+DATE_FORMATS = ["%Y-%m-%d", "%d/%m/%Y", "%d.%m.%Y", "%b %d, %Y"]
 
 class Lead(BaseModel):
     lead_name: str = Field(alias="lead name")
     company_name: str = Field(alias="company name")
-    cuit: str
+    cuit: str | None = None
     email: str
     phone: str
     channel: str
@@ -94,14 +95,12 @@ class Lead(BaseModel):
     status: str
     owner: str
 
-DATE_FORMATS = ["%Y-%m-%d", "%d/%m/%Y", "%d.%m.%Y", "%b %d, %Y"]
-
-@field_validator("lead_date", mode="before")
-@classmethod
-def parse_date(cls, v):
-    for fmt in DATE_FORMATS:
-        try:
-            return datetime.strptime(str(v).strip(), fmt).date()
-        except ValueError:
-            continue
-    raise ValueError(f"unrecognised date format: {v}")
+    @field_validator("lead_date", mode="before")
+    @classmethod
+    def parse_date(cls, v):
+        for fmt in DATE_FORMATS:
+            try:
+                return datetime.strptime(str(v).strip(), fmt).date()
+            except ValueError:
+                continue
+        raise ValueError(f"unrecognised date format: {v}")
