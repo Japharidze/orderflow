@@ -18,14 +18,14 @@ join between them. I picked it because all three reports are the same kind of
 question — take a measure, group it by some attribute — and that is what a star
 is good at.
 
-Dimensions are flat on purpose. For example `dim_product` carries the supplier name as a
-plain column instead of pointing at a separate supplier dimension. That repeats
-the name on every product row, but it saves a join in every query that needs it.
-Normalise in the source, denormalise in the warehouse.
+Dimensions are flat on purpose. Where a dimension needs an attribute from a
+related table, it carries it as a plain column instead of pointing at another
+dimension. That repeats values, but it saves a join in every query that needs
+them. Normalise in the source, denormalise in the warehouse.
 
 ## The platform, as I understood it
 
-The brief describes a drop-ship business:
+The platform is a drop-ship business:
 
 - Suppliers are companies that offer products at a default price.
 - Companies buy those products and sell them on to end customers.
@@ -38,8 +38,7 @@ The brief describes a drop-ship business:
 - Users of the website are companies and suppliers.
 
 "Sales" in the monthly report means quantity times unit price on order lines,
-grouped by the month of the order. The platform takes no commission in the
-brief, so there is nothing else to count.
+grouped by the month of the order. The platform takes no commission, so there is nothing else to count.
 
 ## Source database (Postgres)
 
@@ -53,20 +52,21 @@ brief, so there is nothing else to count.
 | `order_lines` | order, product, quantity, unit price |
 
 Suppliers are companies with a flag rather than a separate table, because the
-brief says a supplier is just a different type of company.
+supplier is just a different type of company.
 
 `unit_price` is written onto the order line when the order is placed. It comes
-from the company catalog, falling back to the supplier default price if the
-product is not in the catalog. Snapshotting the price on the line is how real
-systems work — a later price change must not rewrite history.
+from the company catalog — a company can only sell what it lists, so there is no
+fallback. Snapshotting the price on the line is how real systems work: a later
+price change must not rewrite history.
 
 ### CUIT
 
 The Argentine tax id. Eleven digits, written `XX-XXXXXXXX-X`. The first two
 digits say what kind of holder it is (30, 33, 34 for companies), the last digit
-is a checksum over the first ten. I generate valid ones for the database and
-some invalid ones for the spreadsheet, so the validator has something real to
-catch. CUIT is also the key that matches a marketing lead back to a company.
+is a checksum over the first ten. I generate the format but not a valid check
+digit — a production validator would verify it, and that would be the honest
+place to reject a malformed tax id. CUIT is also the key that would match a
+marketing lead back to a company.
 
 ## Generators
 
@@ -139,16 +139,16 @@ Five models: `stg_companies`, `stg_products`, `stg_orders`, `stg_order_lines`,
 them, so a staging model would be a view nobody selects from.
  
 The marketing spreadsheet is worth saying more about, since it is one of the
-three named sources. It goes through the whole ingest pipeline — extracted,
-validated against the CUIT checksum and the date formats, bad rows quarantined
+three sources. It goes through the whole ingest pipeline — extracted,
+validated against the expected fields and date formats, bad rows quarantined
 with a reason, landed as Parquet, loaded into bronze with lineage columns.
 Nothing was skipped. It simply is not modelled above bronze, because modelling
 exists to serve reports and no report reads it. The natural consumer would be a
 lead conversion report, which is not in scope.
  
 `stg_weblog` is the one model that does real work rather than renaming. It
-parses the log line into columns, then derives device type, browser and OS from
-the user-agent, and country from the IP. The IP to country mapping is a dbt seed
+parses the log line into columns, then derives device type from the user-agent
+and country from the IP. The IP to country mapping is a dbt seed
 — a CSV in the project, versioned with everything else.
  
 ## What goes in gold
@@ -165,9 +165,9 @@ source, neither is something any of the three reports groups by.
  
 | Model | Grain | Key | Main columns |
 |---|---|---|---|
-| `dim_date` | one day | `date_key` (YYYYMMDD) | date, year, quarter, month, month name, day of week |
-| `dim_company` | one company | source id | CUIT, name, username, is_supplier |
-| `dim_product` | one product | source id | name, default price, supplier name |
+| `dim_date` | one day | `date_key` (YYYYMMDD) | date, year, month, month name, day |
+| `dim_company` | one company | source id | username, is_supplier |
+| `dim_product` | one product | source id | product name |
  
 Source ids are used as keys where they exist. They are stable and unique, and it
 means a warehouse row can be traced back to the source row without a lookup.
@@ -185,18 +185,20 @@ on the line, so a separate order dimension would hold nothing.
  
 **`fct_web_requests`** — one row per log line.
  
-Keys: date, company (null when the username matches nobody), device, country.
-`username` is degenerate. I call it requests rather than sessions because I do
-not sessionise anything, and both reports work fine at request level.
+Keys: date, company (null when the username matches nobody). `device_type` and
+`country_name` sit on the fact as degenerate columns — there is nothing to say
+about either beyond the value itself, so a dimension would only repeat what the
+fact already has. I call it requests rather than sessions because I do not
+sessionise anything, and both reports work fine at request level.
  
 ## Gold — reports
  
-**`rpt_top_devices`** — requests joined to devices, grouped by device type, top
-five.
+**`rpt_top_devices`** — requests joined to companies so suppliers can be
+excluded, grouped by device type, top five.
  
 **`rpt_top_products_by_country`** — two steps. Find the country with the most
-distinct companies logging in, then take the companies that logged in from
-there, look at their order lines, and rank products by quantity. Nothing here
+logins, then take the distinct companies that logged in from there, look at
+their order lines, and rank products by quantity. Nothing here
 assigns a permanent country to a company; the link goes through the request
 fact.
  
@@ -219,9 +221,9 @@ That is deliberate — one query can join a run to the rows it produced.
 
 `runs` holds one row per invocation: which stage it was entered from, when it
 started and finished, and how it ended. `job_runs` holds one row per job, with
-row counts and the error if there was one. There are eleven jobs: one per
-dataset in landing, one for bronze, and two for transform, since `dbt run` and
-`dbt test` are worth seeing separately.
+row counts and the error if there was one. There are twelve jobs: one per
+dataset in landing, one for bronze, and three for transform, since `dbt seed`,
+`dbt run` and `dbt test` are worth seeing separately.
 
 `job_runs` is append-only. A retry after a failure writes a new row rather than
 overwriting the old one, so the failure and the recovery both stay visible.
@@ -244,6 +246,22 @@ through a dataset would need batch level watermarks, which is out of scope.
 the rest. There is deliberately no `--only`. Every stage depends on the one
 before it, so running one in isolation would leave the marts stale against a
 newer bronze, and nothing in the system would flag it.
+
+## Scale
+
+The pipeline was run against five million weblog lines to see whether it holds
+up. End to end that is about twelve minutes on a laptop. Extraction streams the
+file line by line, parquet is written in batches, and everything above bronze is
+set based SQL in DuckDB, so memory stays flat no matter how big the input is.
+
+That run also found a real bug. `rpt_top_products_by_country` joined the request
+fact to the order line fact on `company_id`, which pairs every request with every
+order line from that company. At five hundred requests the numbers looked
+plausible. At two and a half million they came out in the tens of millions, and
+the ranking was weighted by how much traffic a company happened to generate. The
+fix was to collapse requests to distinct companies before joining. Worth saying
+because it was a correctness bug rather than a performance one, and only volume
+made it visible.
 
 ## Report decisions
 
