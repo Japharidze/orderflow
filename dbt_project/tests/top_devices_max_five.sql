@@ -1,0 +1,1 @@
+select count(*) from {{ ref('rpt_top_devices') }} having count(*) > 5
