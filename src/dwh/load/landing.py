@@ -32,7 +32,7 @@ def _write_batch(rows: list[dict], dataset: str, batch_no: int) -> Path:
     pq.write_table(pa.Table.from_pylist(rows), path)
     return path
 
-def _land(run_id: int, name: str, iterator: callable, schema: callable) -> None:
+def _land(run_id: int, name: str, iterator: callable, schema: callable) -> tuple[int, int, int]:
     """Land one dataset. Returns how many rows were kept and rejected."""
     path = LANDING / name
     if path.exists():
